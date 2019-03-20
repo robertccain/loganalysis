@@ -28,17 +28,22 @@ create view popauth as
 
 --3. On which days did more than 1% of requests lead to errors?
 -- build errors
+
+create view dateco as
+  select path, ip, method, status, id, cast(time as date) from log;
+
 create view statcounta as
-  select status as status_fail, time as time_fail, count(*) as errors from log
+  select status as status_fail, time as time_fail, count(*) as errors from dateco
   where status = '404 NOT FOUND'
   group by status, time
   order by time;
 --build ok
 create view statcountb as
-  select status as status_ok, time as time_ok, count(*) as pass from log
+  select status as status_ok, time as time_ok, count(*) as pass from dateco
   where status = '200 OK'
   group by status, time
   order by time;
+
 --build combo view
 create view statjoin as
   select * from statcounta
@@ -53,8 +58,8 @@ select status_fail, time_fail,
     (statjoin.errors::float*100)/statjoin.pass::float as percentage) as test
     from statjoin
     group by status_fail, time_fail, test
-    order by test;
-
+    order by test
+    where test > 1.0;
 
 
 
