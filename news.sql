@@ -1,5 +1,6 @@
 --1. What are the most popular three articles of all time?
 --
+create view popart as
 SELECT log.path, COUNT(*) as num
 from log
 group by log.path
@@ -22,7 +23,8 @@ create view popauth as
     INNER JOIN articles ON (authors.id = articles.author)
     JOIN log ON (REPLACE(log.path, '/article/', '')=articles.slug)
     group by name
-    order by num desc;
+    order by num desc
+    limit 3;
 
 
 
@@ -53,6 +55,7 @@ create view statjoin as
   order by statcounta.time_fail;
 
 -- final statement to create percentage calculation
+create view final_output as
 select status_fail, time_fail,
   (select
     (statjoin.errors::float*100)/statjoin.pass::float as percentage) as test
