@@ -20,7 +20,7 @@ You can run this python progrma locally by running
   psql news
   \dt
   \d table_name [pick any of the table names you see from \dt]
-  
+
 sample.txt holds samples of the data from running the sql statements:
 
 Question # 1
@@ -39,3 +39,19 @@ Question # 2
 Question #3
 status_fail  	 time_fail   Test       
 404 NOT FOUND  2016-07-17  2.315068995
+
+The following views are used to build the last query:
+
+create view dateco as
+  select path, ip, method, status, id, cast(time as date) from log;
+
+create view statcounta as
+  select status, time, count(*) as total from dateco
+  group by status, time
+  order by time;
+
+create view statcountb as
+  select status as status_fail, time as time_fail, count(*) as fail from dateco
+  where status != '200 OK'
+  group by status_fail, time_fail
+  order by time_fail;
