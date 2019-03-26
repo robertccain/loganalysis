@@ -1,5 +1,4 @@
---1. What are the most popular three articles of all time?
---
+--1. What are the most popular three articles of all time?--
 create view popart as
 SELECT log.path, COUNT(*) as num
 from log
@@ -15,7 +14,6 @@ HAVING log.path = '/article/bad-things-gone' or
 order by num desc
 limit 3;
 
-
 --2. Who are the most popular article authors of all time?
 
 create view popauth as
@@ -26,8 +24,6 @@ create view popauth as
     order by num desc
     limit 3;
 
-
-
 --3. On which days did more than 1% of requests lead to errors?
 -- build errors
 
@@ -35,34 +31,33 @@ create view dateco as
   select path, ip, method, status, id, cast(time as date) from log;
 
 create view statcounta as
-  select status as status_fail, time as time_fail, count(*) as errors from dateco
-  where status = '404 NOT FOUND'
+  select status, time, count(*) as total from dateco
   group by status, time
   order by time;
 --build ok
 create view statcountb as
-  select status as status_ok, time as time_ok, count(*) as pass from dateco
-  where status = '200 OK'
-  group by status, time
-  order by time;
+  select status as status_fail, time as time_fail, count(*) as fail from dateco
+  where status != '200 OK'
+  group by status_fail, time_fail
+  order by time_fail;
 
 --build combo view
 create view statjoin as
   select * from statcounta
-  join statcountb on (statcounta.time_fail = statcountb.time_ok)
-  group by statcounta.status_fail, statcounta.time_fail,
-  statcounta.errors, statcountb.status_ok, statcountb.time_ok, statcountb.pass
-  order by statcounta.time_fail;
+  join statcountb on (statcounta.time = statcountb.time_fail)
+  group by statcounta.status, statcounta.time,
+  statcounta.total, statcountb.status_fail, statcountb.time_fail,
+  statcountb.fail
+  order by statcountb.time_fail;
 
 -- final statement to create percentage calculation
 create view final_output as
 select status_fail, time_fail,
   (select
-    (statjoin.errors::float*100)/statjoin.pass::float as percentage) as test
+    (statjoin.fail::float*100)/statjoin.total::float as percentage) as test
     from statjoin
     group by status_fail, time_fail, test
-    order by test
-    where test > 1.0;
+    order by test;
 
 
 
