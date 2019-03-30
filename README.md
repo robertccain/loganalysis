@@ -13,7 +13,8 @@ In the SQL file there are extra select statements not used in the python program
 The data for this can be found at the following link.
 https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip
 
-You can run this python progrma locally by running
+You can run this python program locally by running
+  $ psql -d news -f newsdata.sql
   $ psql -d news -f
 
   you can explore the table by running
