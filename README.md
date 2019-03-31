@@ -41,6 +41,26 @@ Question #3
 status_fail  	 time_fail   Test       
 404 NOT FOUND  2016-07-17  2.315068995
 
+I used views to call the first two queries.
+
+create view popart as
+  SELECT title, count(*) as num FROM articles
+  INNER JOIN authors ON (authors.id = articles.author)
+  JOIN log ON (REPLACE(log.path, '/article/', '')=articles.slug)
+  group by title
+  order by num desc
+  limit 3;
+
+  create view popauth as
+      SELECT name, count(*) as num FROM authors
+      INNER JOIN articles ON (authors.id = articles.author)
+      JOIN log ON (REPLACE(log.path, '/article/', '')=articles.slug)
+      group by name
+      order by num desc;
+
+This was not a requirement. However, I found it made the python sheet cleaner 
+and easier to manage. It was a personal choice. 
+
 The following views are used to build the last query:
 
 create view dateco as
