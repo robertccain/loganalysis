@@ -17,7 +17,7 @@ To properly run this program you will need to a working **Virtual Machine**
   and a working Vagrant client
   * [Vagrant](https://www.vagrantup.com/downloads.html)
   as well as the following **Vagrant** File loaded into the working directory you are using for this exercise.
-  * [VagrantFile](https://github.com/udacity/fullstack-nanodegree-vm/blob/master/vagrant/Vagrantfile)
+  * [VagrantFile](https://github.com/udacity/fullstack-nanodegree-vm/blob/master/vagrant/Vagrantfile) Put this file in the working directory with news.py and the other files. This is **_VERY important_**. If you do not have this file in the correct directory your Vagrant machine will not work properly... this will results in needless headaches.
 
 Once you have installed your **VirtualBox**, Complete the following tasks:
   * Open a new terminal
