@@ -1,41 +1,42 @@
---1. What are the most popular three articles of all time?--
-create view popart as
-  SELECT title, count(*) as num FROM articles
-  INNER JOIN authors ON (authors.id = articles.author)
-  JOIN log ON (REPLACE(log.path, '/article/', '')=articles.slug)
-  group by title
-  order by num desc
-  limit 3;
-
---2. Who are the most popular article authors of all time?
-create view popauth as
-    SELECT name, count(*) as num FROM authors
-    INNER JOIN articles ON (authors.id = articles.author)
-    JOIN log ON (REPLACE(log.path, '/article/', '')=articles.slug)
-    group by name
-    order by num desc;
-
---3. On which days did more than 1% of requests lead to errors?
-create view dateco as
-  select path, ip, method, status, id, cast(time as date) from log;
-
-create view stat_all as
-  select status, time as date, count(*) as total from dateco
-  group by status, date
-  order by date;
---build ok
-create view stat_fail as
-  select status as status_fail, time as date_fail, count(*) as fail from dateco
-  where status != '200 OK'
-  group by status_fail, date_fail
-  order by date_fail;
-
--- final statement to create percentage calculation
-create view final_output as
-select stat_fail.status_fail as status, stat_fail.date_fail as date,
-  (select
-    (((stat_fail.fail::float)/stat_all.total::float)*100) as percentage) as test
-    from stat_fail
-    join stat_all on stat_all.date = stat_fail.date_fail
-    group by stat_fail.status_fail, stat_fail.date_fail, test
-    order by test;
+# !/usr/bin/env python
+# Import psycopg2 tool
+import psycopg2
+DBNAME = "news"
+# connect  to db
+connect = psycopg2.connect(database=DBNAME)
+# Open a cursor to perform database operations
+q1 = connect.cursor()
+# Execute a command: this creates a new table
+# question 1
+q1.execute("select * from popart;")
+query1 = "What are the most popular three articles of all time? {}, {} views."
+# Query the database and obtain data as Python objects
+news_fetch = q1.fetchall()
+for title, num in news_fetch:
+    print query1.format(title, num)
+connect.close()
+# --- Insert a blank line between each question ---
+print''
+con = psycopg2.connect(database=DBNAME)
+q2 = con.cursor()
+q2.execute("select * from popauth;")
+query2 = "2.Who are the most popular article authors of all time?{}, {} views."
+# Query the database and obtain data as Python objects
+news_fetch_auth = q2.fetchall()
+# output returns from Query on sepeate lines
+for name, num in news_fetch_auth:
+    print query2.format(name, num)
+con.close()
+# --- Insert a blank line between each question ---
+print''
+c = psycopg2.connect(database=DBNAME)
+q3 = c.cursor()
+q3.execute("select * from final_output where (test > 1.0 AND test < 99);")
+query3 = "3. On which days did more than 1% of requests lead to errors? {},{}%"
+# Query the database and obtain data as Python
+# objects  final_output where test > 1.0
+news_fetch_error = q3.fetchall()
+# Output returns from Query on sepeate lines
+for status, date, test in news_fetch_error:
+    print query3.format(date, test)
+c.close()
