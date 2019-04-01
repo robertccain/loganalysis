@@ -1,11 +1,14 @@
 --1. What are the most popular three articles of all time?--
 create view popart as
-  SELECT title, count(*) as num FROM articles
-  INNER JOIN authors ON (authors.id = articles.author)
-  JOIN log ON (REPLACE(log.path, '/article/', '')=articles.slug)
-  group by title
-  order by num desc
-  limit 3;
+  SELECT title, views
+  FROM articles
+  INNER JOIN
+      (SELECT path, count(path) AS views
+       FROM log
+       GROUP BY log.path) AS log
+  ON log.path = '/article/' || articles.slug
+  ORDER BY views DESC
+  LIMIT 3;
 
 --2. Who are the most popular article authors of all time?
 create view popauth as
